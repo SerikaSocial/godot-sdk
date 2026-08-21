@@ -1,0 +1,77 @@
+{
+  "$schema": "https://serika.dev/schemas/world_rules-1.json",
+  "version": 1,
+  "description": "Canonical world validation rules. This is the SAME file server/assetd loads. The SDK validator and the server validator MUST read this exact file so a world that passes locally passes on upload. Two copies of the allowlist would drift and the server's copy is the one that matters for security.",
+
+  "node_allowlist": [
+    "Node", "Node3D",
+    "MeshInstance3D", "MultiMeshInstance3D",
+    "StaticBody3D", "CollisionShape3D", "CollisionPolygon3D", "Area3D",
+    "CsgBox3D", "CsgCylinder3D", "CsgSphere3D", "CsgMesh3D", "CsgPolygon3D", "CsgCombiner3D",
+    "DirectionalLight3D", "OmniLight3D", "SpotLight3D",
+    "ReflectionProbe", "VoxelGI", "LightmapGI",
+    "WorldEnvironment", "Environment",
+    "GPUParticles3D", "CPUParticles3D",
+    "AudioStreamPlayer3D",
+    "NavigationRegion3D", "NavigationMesh",
+    "GridMap", "MeshLibrary", "Path3D", "PathFollow3D",
+    "Marker3D",
+    "SerikaSpawnPoint", "SerikaPortal", "SerikaPickup", "SerikaAudioZone", "SerikaMirror"
+  ],
+
+  "forbidden_node_types": [
+    "Camera3D", "AnimationPlayer", "AnimationTree",
+    "SubViewport", "SubViewportContainer", "FileDialog",
+    "HTTPRequest", "TCPServer", "UDPServer", "WebSocketPeer"
+  ],
+
+  "forbidden_properties": [
+    "script"
+  ],
+
+  "forbidden_resource_classes": [
+    "GDScript", "CSharpScript", "GDExtension", "NativeScript", "VisualScript"
+  ],
+
+  "forbidden_string_patterns": [
+    "res://addons",
+    "user://",
+    "ResourceLoader",
+    "OS.execute",
+    "load(",
+    ".gdextension"
+  ],
+
+  "budgets": {
+    "max_nodes": 20000,
+    "max_spawn_points": 64,
+    "max_lights_realtime": 24,
+    "max_triangles": 3000000,
+    "max_materials": 512,
+    "max_texture_dimension": 4096,
+    "max_audio_streams": 128,
+    "max_uncompressed_bytes": 314572800,
+    "max_portals": 32
+  },
+
+  "required": {
+    "at_least_one_spawn_point": true
+  },
+
+  "textures": {
+    "allowed_import_formats": ["png", "jpg", "jpeg", "webp", "ktx2"],
+    "transcode_to": "ktx2"
+  },
+
+  "shaders": {
+    "custom_gdshader_allowed": false,
+    "note": "Custom shaders are deferred until a .gdshader validator exists (loop bounds, texture-sample bombs). Use allowlisted parameterized built-in materials until then."
+  },
+
+  "scripting": {
+    "gdscript_allowed": false,
+    "csharp_allowed": false,
+    "behaviour_via": "SerikaScript",
+    "note": "All behaviour must come from SerikaScript (sandboxed VM). Any embedded GDScript/C#/GDExtension is stripped at build time and fails validation here so the creator finds out locally, not on upload."
+  }
+}

@@ -1,0 +1,56 @@
+[gd_scene load_steps=6 format=3 uid="uid://serikademoworld01"]
+
+[ext_resource type="Script" path="res://addons/serika_sdk/nodes/serika_spawn_point.gd" id="1"]
+[ext_resource type="Script" path="res://addons/serika_sdk/nodes/serika_portal.gd" id="2"]
+[ext_resource type="Script" path="res://addons/serika_sdk/nodes/serika_audio_zone.gd" id="3"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1"]
+size = Vector3(40, 1, 40)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_1"]
+size = Vector2(40, 40)
+
+[node name="World" type="Node3D"]
+
+[node name="Environment" type="WorldEnvironment" parent="."]
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.7, -0.5, 0.5, 0, 0.7, 0.7, -0.7, -0.5, 0.5, 0, 10, 0)
+shadow_enabled = true
+
+[node name="Floor" type="StaticBody3D" parent="."]
+
+[node name="FloorMesh" type="MeshInstance3D" parent="Floor"]
+mesh = SubResource("PlaneMesh_1")
+
+[node name="FloorCollision" type="CollisionShape3D" parent="Floor"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("BoxShape3D_1")
+
+[node name="SpawnPoint" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+script = ExtResource("1")
+is_default = true
+
+[node name="SpawnPointB" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 0)
+script = ExtResource("1")
+spawn_group = "vip"
+
+[node name="AudioBubble" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 1, 0)
+script = ExtResource("3")
+private = true
+reverb = 1
+
+[node name="AudioBubbleShape" type="CollisionShape3D" parent="AudioBubble"]
+shape = SubResource("BoxShape3D_1")
+
+[node name="HubPortal" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 1, 0)
+script = ExtResource("2")
+kind = 0
+target_world_id = "00000000-0000-0000-0000-0000000000e0"
+
+[node name="HubPortalShape" type="CollisionShape3D" parent="HubPortal"]
+shape = SubResource("BoxShape3D_1")
