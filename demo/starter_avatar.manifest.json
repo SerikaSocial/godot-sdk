@@ -1,0 +1,15 @@
+{
+  "format": "serikavatar",
+  "format_version": 1,
+  "name": "Serika Default Avatar",
+  "version": "1.0.0",
+  "author": "Serika Social",
+  "description": "The built-in default avatar. A simple capsule rig with head, hands, and feet bones.",
+  "godot_version": "4.7",
+  "custom": {
+    "license": "CC0",
+    "perf_rank": 0,
+    "polygons": 128,
+    "material_count": 1
+  }
+}

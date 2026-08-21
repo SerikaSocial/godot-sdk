@@ -20,8 +20,10 @@ func _ready() -> void:
 	title.add_theme_font_size_override("font_size", 16)
 	add_child(title)
 
-	_add_button("Validate current world", _on_validate)
-	_add_button("Package + Upload world", _on_upload)
+	_add_button("Validate current scene", _on_validate)
+	_add_button("Package + Upload world", _on_upload_world)
+	_add_button("Package + Upload avatar", _on_upload_avatar)
+	_add_button("Import .serikaworld/.serikavatar…", _on_import)
 	_add_button("Test locally (bot session)", _on_test_local)
 
 	add_child(HSeparator.new())
@@ -55,7 +57,7 @@ func _on_validate() -> void:
 	var color := "green" if report.ok() else "red"
 	_log("[color=%s]%s[/color]" % [color, report.to_text()])
 
-func _on_upload() -> void:
+func _on_upload_world() -> void:
 	var root := _edited_root()
 	if root == null:
 		_log("[color=orange]No scene open.[/color]")
@@ -68,8 +70,46 @@ func _on_upload() -> void:
 			_log("[color=%s]%s[/color]" % ["green" if ok else "red", m]))
 	var scene_path := root.scene_file_path
 	var source_dir := scene_path.get_base_dir() if scene_path != "" else "res://"
-	_log("Submitting '%s'…" % root.name)
+	_log("Submitting world '%s'…" % root.name)
 	_uploader.submit(root, root.name, source_dir)
+
+func _on_upload_avatar() -> void:
+	var root := _edited_root()
+	if root == null:
+		_log("[color=orange]No scene open.[/color]")
+		return
+	if _uploader == null:
+		_uploader = SerikaUploader.new()
+		add_child(_uploader)
+		_uploader.progress.connect(func(m): _log(m))
+		_uploader.finished.connect(func(ok, m):
+			_log("[color=%s]%s[/color]" % ["green" if ok else "red", m]))
+	var scene_path := root.scene_file_path
+	var source_dir := scene_path.get_base_dir() if scene_path != "" else "res://"
+	_log("Submitting avatar '%s'…" % root.name)
+	_uploader.submit_avatar(root, root.name, source_dir)
+
+func _on_import() -> void:
+	var dialog := EditorFileDialog.new()
+	dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
+	dialog.filters = PackedStringArray(["*.serikaworld ; Serika World", "*.serikavatar ; Serika Avatar"])
+	dialog.access = EditorFileDialog.ACCESS_FILESYSTEM
+	dialog.file_selected.connect(_on_import_selected)
+	add_child(dialog)
+	dialog.popup_centered(Vector2i(800, 600))
+
+func _on_import_selected(path: String) -> void:
+	var fmt := SerikaFile.detect_format(path)
+	if fmt == "":
+		_log("[color=red]Unknown format: %s[/color]" % path)
+		return
+	var manifest := SerikaFile.read_manifest(path)
+	if manifest == null:
+		_log("[color=red]Could not read manifest from %s[/color]" % path)
+		return
+	var dest := "res://imported/%s" % path.get_file().get_basename()
+	SerikaFile.extract(path, dest)
+	_log("[color=green]Imported %s '%s' → %s[/color]" % [fmt, manifest.name, dest])
 
 func _on_test_local() -> void:
 	# Launches the game client pointed at a local relay with synthetic bots. In M1 this just

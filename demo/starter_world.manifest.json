@@ -1,0 +1,16 @@
+{
+  "format": "serikaworld",
+  "format_version": 1,
+  "name": "Starter World",
+  "version": "1.0.0",
+  "author": "Serika Social",
+  "description": "A minimal starter world with a floor, sun, and spawn point. Use as a template for new worlds.",
+  "godot_version": "4.7",
+  "capacity": 32,
+  "tags": ["starter", "template", "hangout"],
+  "custom": {
+    "license": "CC0",
+    "spawn_position": [0, 1, 0],
+    "floor_size": [40, 40]
+  }
+}
