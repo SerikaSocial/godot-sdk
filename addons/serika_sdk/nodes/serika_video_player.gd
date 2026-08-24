@@ -5,6 +5,8 @@ extends MeshInstance3D
 
 ## A cinema-style video surface. Fetches a YouTube thumbnail and, if a direct stream URL is
 ## available, plays it on the mesh. Authors set the YouTube video ID; the runtime resolves it.
+## The server resolves the URL via yt-dlp and, if the engine can't decode the format (e.g. mp4),
+## transcodes to ogv/Theora via ffmpeg on the fly through /v1/video/transcode.
 
 @export_group("Video")
 ## YouTube video ID (the part after v= in the URL).

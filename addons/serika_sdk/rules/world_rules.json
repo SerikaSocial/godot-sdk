@@ -65,7 +65,8 @@
 
   "shaders": {
     "custom_gdshader_allowed": false,
-    "note": "Custom shaders are deferred until a .gdshader validator exists (loop bounds, texture-sample bombs). Use allowlisted parameterized built-in materials until then."
+    "custom_gdshader_trust_level": 5,
+    "note": "Custom .gdshader files are gated by trust level. Level ≥5 (Creator) can attach custom shaders; below that, only allowlisted parameterized built-in materials are permitted. The validator checks the author's trust level at upload time and strips shaders below the threshold."
   },
 
   "scripting": {
@@ -73,5 +74,41 @@
     "csharp_allowed": false,
     "behaviour_via": "SerikaScript",
     "note": "All behaviour must come from SerikaScript (sandboxed VM). Any embedded GDScript/C#/GDExtension is stripped at build time and fails validation here so the creator finds out locally, not on upload."
+  },
+
+  "trust_level_gates": {
+    "description": "Features gated by the author's trust level (0=Visitor ... 8=Verified Creator). The server checks the author's trust at upload time; the client checks again at load time. Both MUST agree.",
+    "gates": [
+      {
+        "feature": "custom_shaders",
+        "min_trust": 5,
+        "description": "Attach custom .gdshader files to materials. Below this level, only built-in StandardMaterial3D / ORMMaterial3D are allowed."
+      },
+      {
+        "feature": "particle_systems",
+        "min_trust": 6,
+        "description": "GPUParticles3D and CPUParticles3D with custom emission scripts. Below this level, particles are allowed but without SerikaScript-driven emission."
+      },
+      {
+        "feature": "spatial_audio_zones",
+        "min_trust": 6,
+        "description": "SerikaAudioZone with SerikaScript-driven spatial playback control."
+      },
+      {
+        "feature": "advanced_networking",
+        "min_trust": 8,
+        "description": "SerikaScript NetEmitString, NetSyncGet, NetSyncSet host calls. Below this level, only numeric NetEmit is available."
+      },
+      {
+        "feature": "user_invite_portals",
+        "min_trust": 5,
+        "description": "Allow users to spawn invite portals in this world. World must also set allow_invite_portals=true in its manifest."
+      },
+      {
+        "feature": "video_player",
+        "min_trust": 3,
+        "description": "SerikaVideoPlayer nodes. Below this level, video screens are display-only (thumbnail)."
+      }
+    ]
   }
 }
