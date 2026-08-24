@@ -7,6 +7,7 @@
     "Node", "Node3D",
     "MeshInstance3D", "MultiMeshInstance3D",
     "StaticBody3D", "CollisionShape3D", "CollisionPolygon3D", "Area3D",
+    "RigidBody3D",
     "CsgBox3D", "CsgCylinder3D", "CsgSphere3D", "CsgMesh3D", "CsgPolygon3D", "CsgCombiner3D",
     "DirectionalLight3D", "OmniLight3D", "SpotLight3D",
     "ReflectionProbe", "VoxelGI", "LightmapGI",
@@ -16,7 +17,8 @@
     "NavigationRegion3D", "NavigationMesh",
     "GridMap", "MeshLibrary", "Path3D", "PathFollow3D",
     "Marker3D",
-    "SerikaSpawnPoint", "SerikaPortal", "SerikaPickup", "SerikaAudioZone", "SerikaMirror"
+    "SerikaSpawnPoint", "SerikaPortal", "SerikaPickup", "SerikaAudioZone", "SerikaMirror",
+    "SerikaPhysicsProp", "SerikaVideoPlayer"
   ],
 
   "forbidden_node_types": [
