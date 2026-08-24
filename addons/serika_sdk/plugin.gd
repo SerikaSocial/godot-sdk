@@ -26,9 +26,18 @@ func _enter_tree() -> void:
 	add_custom_type("SerikaAudioZone", "Area3D",
 		preload("res://addons/serika_sdk/nodes/serika_audio_zone.gd"),
 		preload("res://addons/serika_sdk/icons/audio_zone.svg"))
-	add_custom_type("SerikaMirror", "MeshInstance3D",
+	add_custom_type("SerikaMirror", "Node3D",
 		preload("res://addons/serika_sdk/nodes/serika_mirror.gd"),
 		preload("res://addons/serika_sdk/icons/mirror.svg"))
+	add_custom_type("SerikaVideoPlayer", "MeshInstance3D",
+		preload("res://addons/serika_sdk/nodes/serika_video_player.gd"),
+		preload("res://addons/serika_sdk/icons/portal.svg"))
+	add_custom_type("SerikaWorldLoader", "Node",
+		preload("res://addons/serika_sdk/nodes/serika_world_loader.gd"),
+		preload("res://addons/serika_sdk/icons/portal.svg"))
+	add_custom_type("SerikaDevControls", "Control",
+		preload("res://addons/serika_sdk/nodes/serika_dev_controls.gd"),
+		preload("res://addons/serika_sdk/icons/spawn_point.svg"))
 
 	_dock = Dock.new()
 	_dock.plugin = self
@@ -44,3 +53,6 @@ func _exit_tree() -> void:
 	remove_custom_type("SerikaPickup")
 	remove_custom_type("SerikaAudioZone")
 	remove_custom_type("SerikaMirror")
+	remove_custom_type("SerikaVideoPlayer")
+	remove_custom_type("SerikaWorldLoader")
+	remove_custom_type("SerikaDevControls")
