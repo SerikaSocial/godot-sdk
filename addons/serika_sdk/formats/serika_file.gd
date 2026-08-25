@@ -21,7 +21,6 @@ extends RefCounted
 ##     "godot_version": "4.7",
 ##     "capacity": 32,           -- worlds only
 ##     "tags": ["hangout"],       -- worlds only
-##     "allow_invite_portals": false,  -- worlds only, requires trust ≥5
 ##     "custom": {}               -- arbitrary creator-defined key/value pairs
 ##   }
 ##
@@ -47,8 +46,6 @@ class Manifest:
 	var capacity: int
 	var tags: PackedStringArray
 	var custom: Dictionary
-	# World-only: allow users to spawn invite portals (requires trust ≥5, off by default).
-	var allow_invite_portals: bool
 
 	static func from_dict(d: Dictionary) -> Manifest:
 		var m := Manifest.new()
@@ -63,7 +60,6 @@ class Manifest:
 		var tags_arr: Array = d.get("tags", [])
 		m.tags = PackedStringArray(tags_arr)
 		m.custom = d.get("custom", {})
-		m.allow_invite_portals = bool(d.get("allow_invite_portals", false))
 		return m
 
 	func to_dict() -> Dictionary:
@@ -80,7 +76,6 @@ class Manifest:
 		if format == SerikaFile.FORMAT_WORLD:
 			d["capacity"] = capacity
 			d["tags"] = tags
-			d["allow_invite_portals"] = allow_invite_portals
 		return d
 
 	func to_json() -> String:

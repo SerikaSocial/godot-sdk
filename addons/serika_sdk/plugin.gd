@@ -38,6 +38,15 @@ func _enter_tree() -> void:
 	add_custom_type("SerikaDevControls", "Control",
 		preload("res://addons/serika_sdk/nodes/serika_dev_controls.gd"),
 		preload("res://addons/serika_sdk/icons/spawn_point.svg"))
+	add_custom_type("SerikaSeatNode", "Node3D",
+		preload("res://addons/serika_sdk/nodes/serika_seat_node.gd"),
+		preload("res://addons/serika_sdk/icons/spawn_point.svg"))
+	add_custom_type("SerikaInteractionPoint", "Area3D",
+		preload("res://addons/serika_sdk/nodes/serika_interaction_point.gd"),
+		preload("res://addons/serika_sdk/icons/pickup.svg"))
+	add_custom_type("SerikaLayNode", "Node3D",
+		preload("res://addons/serika_sdk/nodes/serika_lay_node.gd"),
+		preload("res://addons/serika_sdk/icons/spawn_point.svg"))
 
 	_dock = Dock.new()
 	_dock.plugin = self
@@ -56,3 +65,6 @@ func _exit_tree() -> void:
 	remove_custom_type("SerikaVideoPlayer")
 	remove_custom_type("SerikaWorldLoader")
 	remove_custom_type("SerikaDevControls")
+	remove_custom_type("SerikaSeatNode")
+	remove_custom_type("SerikaInteractionPoint")
+	remove_custom_type("SerikaLayNode")
