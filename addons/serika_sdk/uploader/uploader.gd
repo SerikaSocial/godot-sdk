@@ -195,14 +195,21 @@ func _build_multipart(boundary: String, name: String, meta: Dictionary, file_byt
 	if meta.has("description"):
 		out.append_array(b)
 		out.append_array(("Content-Disposition: form-data; name=\"description\"\r\n\r\n").to_utf8_buffer())
-		out.append_array(("%s\r\n" % String(meta["description"])).to_utf8_buffer())
+		out.append_array(("%s\r\n" % str(meta["description"])).to_utf8_buffer())
 
 	# tags field
 	if meta.has("tags"):
-		var tags := ",".join(meta["tags"]) if typeof(meta["tags"]) == TYPE_ARRAY else String(meta["tags"])
+		var tags_val = meta["tags"]
+		var tags_str := ""
+		if typeof(tags_val) == TYPE_ARRAY:
+			tags_str = ",".join(tags_val)
+		elif typeof(tags_val) == TYPE_PACKED_STRING_ARRAY:
+			tags_str = ",".join(tags_val)
+		else:
+			tags_str = str(tags_val)
 		out.append_array(b)
 		out.append_array(("Content-Disposition: form-data; name=\"tags\"\r\n\r\n").to_utf8_buffer())
-		out.append_array(("%s\r\n" % tags).to_utf8_buffer())
+		out.append_array(("%s\r\n" % tags_str).to_utf8_buffer())
 
 	# file field
 	var filename := "%s%s" % [name.replace(" ", "_").to_lower(), file_ext]
