@@ -1,5 +1,5 @@
 @tool
-extends Control
+extends VBoxContainer
 
 ## Serika SDK — the creator dashboard dock.
 ##
@@ -32,6 +32,8 @@ var _pages: Dictionary = {}
 var _current_page: String = "world"
 var _output: RichTextLabel
 var _world_meta: Dictionary = {}
+var _world_list_cache: Array = []
+var _browse_list: VBoxContainer
 var _status_label: Label
 var _progress_bar: ProgressBar
 
@@ -45,6 +47,10 @@ var _thumb_path: String = ""
 
 var _api_edit: LineEdit
 var _token_edit: LineEdit
+var _email_edit: LineEdit
+var _pass_edit: LineEdit
+var _login_btn: Button
+var _login_status: Label
 
 func _init() -> void:
 	name = "SerikaSDK"
@@ -56,12 +62,9 @@ func _ready() -> void:
 	_build_ui()
 
 func _build_ui() -> void:
-	var root := VBoxContainer.new()
-	root.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	root.add_theme_constant_override("separation", 0)
-	add_child(root)
+	add_theme_constant_override("separation", 0)
 
-	root.add_child(_make_header())
+	add_child(_make_header())
 
 	_tab_bar = TabBar.new()
 	_tab_bar.tab_count = 5
@@ -72,12 +75,12 @@ func _build_ui() -> void:
 	_tab_bar.set_tab_title(4, "Help")
 	_tab_bar.tab_changed.connect(_on_tab_changed)
 	_tab_bar.add_theme_font_size_override("font_size", 12)
-	root.add_child(_tab_bar)
+	add_child(_tab_bar)
 
 	var pages_vbox := VBoxContainer.new()
 	pages_vbox.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	pages_vbox.add_theme_constant_override("separation", 0)
-	root.add_child(pages_vbox)
+	add_child(pages_vbox)
 
 	_pages["world"] = _build_world_page()
 	_pages["avatar"] = _build_avatar_page()
@@ -90,8 +93,8 @@ func _build_ui() -> void:
 		page.visible = (key == _current_page)
 		pages_vbox.add_child(page)
 
-	root.add_child(_make_status_bar())
-	root.add_child(HSeparator.new())
+	add_child(_make_status_bar())
+	add_child(HSeparator.new())
 
 	_output = RichTextLabel.new()
 	_output.fit_content = true
@@ -99,7 +102,7 @@ func _build_ui() -> void:
 	_output.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	_output.custom_minimum_size = Vector2(0, 100)
 	_output.add_theme_font_size_override("normal_font_size", 11)
-	root.add_child(_output)
+	add_child(_output)
 
 	_log("[color=%s]Serika SDK ready.[/color]" % _c(PURPLE_HI))
 
@@ -299,7 +302,7 @@ func _build_browse_page() -> Control:
 	list.add_theme_constant_override("separation", 4)
 	scroll.add_child(list)
 
-	_pages["_browse_list"] = list
+	_browse_list = list
 
 	_on_browse_refresh()
 
@@ -312,6 +315,32 @@ func _build_settings_page() -> Control:
 	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	vbox.add_theme_constant_override("separation", 8)
 	scroll.add_child(vbox)
+
+	vbox.add_child(_make_section_title("Login"))
+
+	vbox.add_child(_make_label("Email"))
+	_email_edit = LineEdit.new()
+	_email_edit.placeholder_text = "you@example.com"
+	_email_edit.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(_email_edit)
+
+	vbox.add_child(_make_label("Password"))
+	_pass_edit = LineEdit.new()
+	_pass_edit.secret = true
+	_pass_edit.placeholder_text = "••••••••"
+	_pass_edit.add_theme_font_size_override("font_size", 12)
+	vbox.add_child(_pass_edit)
+
+	_login_btn = _make_button("Login", _on_login)
+	vbox.add_child(_login_btn)
+
+	_login_status = _make_label("")
+	_login_status.add_theme_font_size_override("font_size", 11)
+	vbox.add_child(_login_status)
+
+	if not SerikaSdk.session_token().is_empty():
+		_login_status.text = "Logged in (token saved)"
+		_login_status.add_theme_color_override("font_color", OK_GREEN)
 
 	vbox.add_child(_make_section_title("Connection"))
 
@@ -531,7 +560,12 @@ func _on_publish_world() -> void:
 		_uploader.finished.connect(_on_upload_finished)
 	_set_status("Publishing...", PURPLE_HI)
 	_show_progress(true, 5)
-	_uploader.submit(root, name, source_dir)
+	var meta := {
+		"name": name,
+		"description": _desc_edit.text,
+		"tags": _tags_edit.text.split(","),
+	}
+	_uploader.submit(root, name, source_dir, meta)
 
 func _on_upload_progress(msg: String) -> void:
 	_log(msg)
@@ -564,8 +598,14 @@ func _on_add_spawn() -> void:
 func _on_capture_thumb() -> void:
 	if plugin == null:
 		return
-	var vp := plugin.get_editor_interface().get_editor_main_screen().get_viewport()
-	var img := vp.get_texture().get_image()
+	var img: Image = null
+	# Try to find the editor's 3D SubViewport for a clean capture
+	var main_screen := plugin.get_editor_interface().get_editor_main_screen()
+	img = _find_3d_viewport_image(main_screen)
+	# Fallback: capture the entire editor window
+	if img == null:
+		var vp := get_viewport()
+		img = vp.get_texture().get_image()
 	if img == null:
 		_log("[color=%s]Could not capture viewport.[/color]" % _c(ERR_RED))
 		return
@@ -576,6 +616,20 @@ func _on_capture_thumb() -> void:
 	var tex := ImageTexture.create_from_image(img)
 	_thumb_preview.texture = tex
 	_log("[color=%s]Thumbnail saved -> %s[/color]" % [_c(OK_GREEN), _thumb_path])
+
+func _find_3d_viewport_image(node: Node) -> Image:
+	if node is SubViewport:
+		var sv := node as SubViewport
+		var tex := sv.get_texture()
+		if tex != null:
+			var i := tex.get_image()
+			if i != null and i.get_width() > 32 and i.get_height() > 32:
+				return i
+	for child in node.get_children():
+		var result := _find_3d_viewport_image(child)
+		if result != null:
+			return result
+	return null
 
 func _on_browse_thumb() -> void:
 	var dialog := EditorFileDialog.new()
@@ -663,7 +717,7 @@ func _on_import_selected(path: String, _expected_format: String) -> void:
 	_log("[color=%s]Imported %s '%s' -> %s[/color]" % [_c(OK_GREEN), fmt, manifest.name, dest])
 
 func _on_browse_refresh() -> void:
-	var list: VBoxContainer = _pages.get("_browse_list", null)
+	var list: VBoxContainer = _browse_list
 	if list == null:
 		return
 	for child in list.get_children():
@@ -749,6 +803,48 @@ func _make_world_row(w: Dictionary) -> Control:
 	vbox.add_child(stats)
 
 	return panel
+
+func _on_login() -> void:
+	var email := _email_edit.text.strip_edges()
+	var password := _pass_edit.text
+	if email.is_empty() or password.is_empty():
+		_login_status.text = "Enter email and password."
+		_login_status.add_theme_color_override("font_color", ERR_RED)
+		return
+	if _http == null:
+		_http = HTTPRequest.new()
+		add_child(_http)
+	_login_btn.disabled = true
+	_login_status.text = "Logging in..."
+	_login_status.add_theme_color_override("font_color", PURPLE_HI)
+	var api := SerikaSdk.api_base()
+	var body := JSON.stringify({"email": email, "password": password})
+	var err := _http.request("%s/v1/session/login" % api, ["Content-Type: application/json"], HTTPClient.METHOD_POST, body)
+	if err != OK:
+		_login_btn.disabled = false
+		_login_status.text = "Request failed to start."
+		_login_status.add_theme_color_override("font_color", ERR_RED)
+		return
+	var result = await _http.request_completed
+	_login_btn.disabled = false
+	var code: int = result[1]
+	var resp_body: PackedByteArray = result[3]
+	var parsed = JSON.parse_string(resp_body.get_string_from_utf8())
+	if code == 200 and typeof(parsed) == TYPE_DICTIONARY and parsed.has("session_token"):
+		var token := String(parsed["session_token"])
+		_token_edit.text = token
+		ProjectSettings.set_setting(SerikaSdk.SETTING_TOKEN, token)
+		ProjectSettings.save()
+		_pass_edit.text = ""
+		var username := String(parsed.get("user", {}).get("username", ""))
+		_login_status.text = "Logged in as %s" % username
+		_login_status.add_theme_color_override("font_color", OK_GREEN)
+		_log("[color=%s]Login successful — session token saved.[/color]" % _c(OK_GREEN))
+	else:
+		var err_msg := String(parsed.get("error", "unknown")) if typeof(parsed) == TYPE_DICTIONARY else "HTTP %d" % code
+		_login_status.text = "Login failed: %s" % err_msg
+		_login_status.add_theme_color_override("font_color", ERR_RED)
+		_log("[color=%s]Login failed (%s).[/color]" % [_c(ERR_RED), err_msg])
 
 func _on_test_connection() -> void:
 	if _http == null:

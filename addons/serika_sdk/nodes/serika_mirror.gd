@@ -106,7 +106,7 @@ func _build_mirror() -> void:
 	_viewport.name = "MirrorViewport"
 	_viewport.size = Vector2i(tex_size, tex_size)
 	_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
-	_viewport.render_target_clear_mode = SubViewport.CLEAR_ALWAYS
+	_viewport.render_target_clear_mode = SubViewport.CLEAR_MODE_ONCE
 	_viewport.own_world_3d = false
 	add_child(_viewport)
 

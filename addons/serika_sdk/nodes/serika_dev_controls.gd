@@ -36,7 +36,7 @@ func _process(delta: float) -> void:
 	var text := "Serika Dev Controls\n"
 	if show_diagnostics:
 		text += "FPS: %d\n" % Engine.get_frames_per_second()
-		text += "Draw calls: %d\n" % RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_DRAW_CALLS_IN_FRAME)
+		text += "Draw calls: %d\n" % RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_TOTAL_DRAW_CALLS_IN_FRAME)
 		text += "Video mem: %.1f MB\n" % (RenderingServer.get_rendering_info(RenderingServer.RENDERING_INFO_VIDEO_MEM_USED) / 1048576.0)
 
 	var player := get_viewport().get_camera_3d()
